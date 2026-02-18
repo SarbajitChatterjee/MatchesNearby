@@ -16,7 +16,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * Then run:  npm run build && npx cap sync
  */
 const config: CapacitorConfig = {
-  appId: "MatchesNearby/SarbajitChatterjee/com.github", // Unique appID in the entire mobile ecosystem, cannot be chnaged after publishing to app stores.
+  appId: "MatchesNearby.SarbajitChatterjee.com.github", // Unique appID in the entire mobile ecosystem, cannot be chnaged after publishing to app stores.
   appName: "MatchNearby_Alpha1",
   webDir: "dist",
   // server: {
