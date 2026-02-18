@@ -1,0 +1,14 @@
+# Secrets — NEVER commit this file
+.env
+
+# Python bytecode (auto-generated, not needed in Git)
+__pycache__/
+*.pyc
+
+# Virtual environments (hundreds of MB of installed packages)
+.venv/
+venv/
+
+# IDE settings (specific to each developer's machine)
+.idea/
+.vscode/

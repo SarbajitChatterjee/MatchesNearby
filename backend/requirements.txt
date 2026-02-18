@@ -1,0 +1,10 @@
+# MatchNearby API — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+fastapi==0.115.0          # Web framework — handles HTTP routing, validation, docs
+uvicorn[standard]==0.30.6 # ASGI server — runs the FastAPI app, listens on a port
+httpx==0.27.2             # Async HTTP client — calls API-Football endpoints
+pydantic==2.9.2           # Data validation — ensures API responses match the contract
+pydantic-settings==2.5.2  # Config management — loads .env file into typed settings
+python-dotenv==1.0.1      # Reads .env files into environment variables
+supabase==2.9.1           # Supabase Python client — reads/writes Postgres database

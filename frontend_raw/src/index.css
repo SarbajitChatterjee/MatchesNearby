@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * MatchNearby Design System
+ * -------------------------
+ * All colors are HSL. Spacing, radius, and shadows are tokenized
+ * so every screen shares identical alignment and dimensions.
+ * Accent (emerald-ish green) is used sparingly — only for
+ * interactive elements, live indicators, and active states.
+ */
+
+@layer base {
+  :root {
+    /* ── Core palette (psychology-driven) ── */
+    --background: 220 20% 98%;
+    --foreground: 222 24% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 24% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 24% 14%;
+
+    /* Primary = dark ink for text-heavy elements */
+    --primary: 222 24% 14%;
+    --primary-foreground: 220 20% 98%;
+
+    /* Secondary = light gray surface */
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 222 24% 14%;
+
+    --muted: 220 16% 95%;
+    --muted-foreground: 220 12% 50%;
+
+    /* Accent = electric blue — trust, focus, universally preferred */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Urgent = warm coral — limbic urgency trigger */
+    --urgent: 12 90% 64%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    /* ── Spacing tokens ── */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+
+    /* ── Shadows ── */
+    --shadow-sm: 0 1px 2px 0 hsl(222 24% 14% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(222 24% 14% / 0.08);
+    --shadow-lg: 0 8px 24px -4px hsl(222 24% 14% / 0.12);
+
+    /* ── Layout constants ── */
+    --header-height: 3.5rem;
+    --tab-bar-height: 3.5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-top: env(safe-area-inset-top, 0px);
+
+    /* Sidebar (unused but kept for shadcn compat) */
+    --sidebar-background: 220 20% 98%;
+    --sidebar-foreground: 220 12% 26%;
+    --sidebar-primary: 222 24% 14%;
+    --sidebar-primary-foreground: 220 20% 98%;
+    --sidebar-accent: 220 16% 95%;
+    --sidebar-accent-foreground: 222 24% 14%;
+    --sidebar-border: 220 14% 90%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 224 32% 8%;
+    --foreground: 220 14% 96%;
+
+    --card: 224 28% 12%;
+    --card-foreground: 220 14% 96%;
+
+    --popover: 224 28% 12%;
+    --popover-foreground: 220 14% 96%;
+
+    --primary: 220 14% 96%;
+    --primary-foreground: 224 32% 8%;
+
+    --secondary: 224 22% 16%;
+    --secondary-foreground: 220 14% 96%;
+
+    --muted: 224 22% 16%;
+    --muted-foreground: 220 12% 58%;
+
+    /* Accent = brighter electric blue for dark backgrounds */
+    --accent: 217 91% 65%;
+    --accent-foreground: 224 32% 8%;
+
+    /* Urgent = slightly muted coral for dark bg */
+    --urgent: 12 85% 58%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 220 14% 96%;
+
+    --border: 224 18% 18%;
+    --input: 224 18% 18%;
+    --ring: 217 91% 65%;
+
+    /* Shadows subtler on dark */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.4);
+
+    --sidebar-background: 224 32% 8%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-primary: 217 91% 65%;
+    --sidebar-primary-foreground: 224 32% 8%;
+    --sidebar-accent: 224 22% 16%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 224 18% 18%;
+    --sidebar-ring: 217 91% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    /* Prevent overscroll bounce on mobile for a native feel */
+    overscroll-behavior: none;
+  }
+}
+
+/* Utility: hide scrollbar but keep scrolling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Splash screen entrance */
+@keyframes splash-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-splash-in {
+  animation: splash-in 0.4s ease-out;
+}
+
+/* Leaflet map container override to respect our tokens */
+.leaflet-container {
+  background: hsl(var(--secondary));
+  font-family: inherit;
+}
