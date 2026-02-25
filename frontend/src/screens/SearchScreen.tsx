@@ -1,11 +1,14 @@
 /**
- * SearchScreen — full-text search for matches by team, venue, or city.
- * Now includes date filtering and sort-by-nearest controls.
+ * SearchScreen — location-centric search for matches.
+ *
+ * Primary use case:
+ * - User types a city (e.g. "Munich") and optionally picks a date
+ * - Backend returns matches for that day, sorted by nearest when requested
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Search, MapPin, X, Navigation, CalendarIcon, ArrowUpDown } from "lucide-react";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MatchCard } from "@/components/MatchCard";
@@ -45,34 +48,18 @@ export function SearchScreen({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [sortByNearest, setSortByNearest] = useState(false);
-  const { data: allMatches = [] } = useMatches();
+  const trimmedQuery = query.trim();
 
-  /** Client-side filter with optional date and distance sort */
-  const filtered = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    let results = allMatches.filter(
-      (m) =>
-        m.venue.toLowerCase().includes(q) ||
-        m.homeTeam.toLowerCase().includes(q) ||
-        m.awayTeam.toLowerCase().includes(q) ||
-        m.venueAddress?.toLowerCase().includes(q)
-    );
-
-    // Date filter
-    if (selectedDate) {
-      results = results.filter((m) => isSameDay(new Date(m.kickoff), selectedDate));
-    }
-
-    // Sort
-    if (sortByNearest) {
-      results.sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0));
-    } else {
-      results.sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime());
-    }
-
-    return results;
-  }, [query, allMatches, selectedDate, sortByNearest]);
+  /**
+   * Server-driven search:
+   * - `query` is treated as a city / location name (e.g. "Munich")
+   * - Date and sort mode are passed directly to the backend
+   */
+  const { data: results = [], isLoading } = useMatches({
+    sort: sortByNearest ? "distance" : "date",
+    date: selectedDate,
+    city: trimmedQuery || undefined,
+  });
 
   /** Request device GPS and populate search with coordinates */
   const handleUseLocation = useCallback(() => {
@@ -100,7 +87,7 @@ export function SearchScreen({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search city, venue, or team…"
+            placeholder="Enter a city (e.g. Munich)…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-9 pr-9"
@@ -155,8 +142,8 @@ export function SearchScreen({
         </Popover>
       </div>
 
-      {/* Sort by nearest toggle — only when results are showing */}
-      {query.trim() && filtered.length > 0 && (
+      {/* Sort by nearest toggle — only when a city is provided */}
+      {trimmedQuery && (
         <div className="mb-md flex items-center gap-2">
           <Button
             variant={sortByNearest ? "default" : "outline"}
@@ -171,7 +158,7 @@ export function SearchScreen({
       )}
 
       {/* Empty query → show discovery helpers */}
-      {!query.trim() && (
+      {!trimmedQuery && (
         <>
           {/* GPS location button */}
           <Button
@@ -225,15 +212,19 @@ export function SearchScreen({
       )}
 
       {/* Search results */}
-      {query.trim() && (
+      {trimmedQuery && (
         <div className="flex flex-col gap-sm pb-md">
-          {filtered.length === 0 ? (
+          {isLoading ? (
             <p className="py-xl text-center text-sm text-muted-foreground">
-              No matches found for "{query}"
+              Loading matches near "{trimmedQuery}"…
+            </p>
+          ) : results.length === 0 ? (
+            <p className="py-xl text-center text-sm text-muted-foreground">
+              No matches found for "{trimmedQuery}"
               {selectedDate && ` on ${format(selectedDate, "MMMM d, yyyy")}`}.
             </p>
           ) : (
-            filtered.map((match) => (
+            results.map((match) => (
               <MatchCard
                 key={match.id}
                 match={match}
