@@ -1,21 +1,25 @@
-# MatchNearby API — Production Container
-# Build:  docker build -t matchnearby-api .
-# Run:    docker run -p 8000:8000 --env-file .env matchnearby-api
-
-# Start with a minimal Python image (~150MB vs ~900MB for the full image).
+# 1. Start with a lightweight, official Python base image
 FROM python:3.12-slim
 
+# 2. Set the working directory inside the container
 WORKDIR /app
 
-# Copy requirements first, then install.
-# Docker caches each layer — if requirements.txt hasn't changed,
-# this step is skipped on rebuild, saving minutes.
+# 3. Prevent Python from writing .pyc files to disk and ensure console output isn't buffered
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# 4. Copy ONLY the requirements file first to leverage Docker layer caching
 COPY requirements.txt .
+
+# 5. Install dependencies
+# --no-cache-dir keeps the image small by not storing the downloaded pip packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code.
+# 6. Copy the rest of the application code
 COPY . .
 
-# Start the server. 0.0.0.0 is required so the container accepts
-# external connections (Railway routes internet traffic into the container).
+# 7. Expose the port the app runs on
+EXPOSE 8000
+
+# 8. Define the command to run the FastAPI app using Uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
