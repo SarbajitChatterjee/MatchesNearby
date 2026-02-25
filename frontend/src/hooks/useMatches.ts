@@ -2,9 +2,9 @@
  * useMatches — React Query hook for fetching matches.
  *
  * Dual-mode data source:
- * - IS_DEVELOPER=true → returns mock data with a simulated 300ms delay
+ * - USE_MOCK_DATA=true → returns mock data with a simulated 300ms delay
  *   so loading skeletons are visible during development.
- * - IS_DEVELOPER=false → calls the real FastAPI backend via API_BASE_URL,
+ * - USE_MOCK_DATA=false → calls the real FastAPI backend via API_BASE_URL,
  *   passing filter/sort as query params, and adapts the response through
  *   the matchAdapter.
  *
@@ -17,7 +17,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { MOCK_MATCHES, MOCK_FILTERS, MOCK_SORTS } from "@/data/mockMatches";
-import { IS_DEVELOPER, API_BASE_URL } from "@/lib/constants";
+import { USE_MOCK_DATA, API_BASE_URL } from "@/lib/constants";
 import { toMatchList } from "@/lib/matchAdapter";
 import type { Match, FilterOption, SortOption } from "@/types/sdui";
 
@@ -32,7 +32,7 @@ export function useMatches(options: UseMatchesOptions = {}) {
   return useQuery<Match[]>({
     queryKey: ["matches", { ...options, date: options.date?.toISOString()?.slice(0, 10), city: options.city }],
     queryFn: async () => {
-      if (IS_DEVELOPER) {
+      if (USE_MOCK_DATA) {
         /* Simulate network latency so skeletons render in dev */
         await new Promise((r) => setTimeout(r, 300));
 

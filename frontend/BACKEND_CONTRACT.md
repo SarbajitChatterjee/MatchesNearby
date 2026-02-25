@@ -178,8 +178,9 @@ The frontend includes `src/lib/matchAdapter.ts` which maps the response above in
 ## How to Connect
 
 1. Set `VITE_API_BASE_URL=https://your-api.com/api` in your environment
-2. Set `IS_DEVELOPER = false` in `src/lib/constants.ts`
-3. The `useMatches` hook will automatically switch from mock data to real API calls
+2. Set `USE_MOCK_DATA = false` in `src/lib/constants.ts` so the app calls the real API instead of local mock data
+3. (Optional) Set `IS_DEVELOPER = false` in `src/lib/constants.ts` when you are ready to enforce the auth gate
+4. The `useMatches` hook will automatically switch from mock data to real API calls
 
 ---
 
