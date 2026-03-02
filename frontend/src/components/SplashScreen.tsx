@@ -1,6 +1,11 @@
 /**
  * SplashScreen — branded overlay shown during app boot.
  *
+ * Responsibilities:
+ * - Show a short branding moment while the app starts up
+ * - Fire a lightweight backend health check so connectivity issues
+ *   surface early in the session instead of failing silently later.
+ *
  * Two-phase fade sequence:
  * 1. Logo + text scale-in immediately (CSS animation)
  * 2. After 1.5s, opacity fades to 0 over 300ms
@@ -11,6 +16,8 @@
  */
 
 import { useEffect, useState } from "react";
+import { toast } from "@/components/ui/sonner";
+import { healthCheck } from "@/lib/healthCheck";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -20,6 +27,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    // Fire-and-forget health probe. We intentionally do not block the
+    // splash on this check; failures surface as a toast while the app
+    // continues to load, so users are informed without being stuck.
+    healthCheck().catch(() => {
+      toast.error("Unable to reach the MatchNearby server. Some data may be unavailable.");
+    });
+
     const t1 = setTimeout(() => setFadeOut(true), 1500);
     const t2 = setTimeout(onComplete, 1800);
     return () => {
