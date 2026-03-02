@@ -6,7 +6,7 @@
  * - Backend returns matches for that day, sorted by nearest when requested
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Search, MapPin, X, Navigation, CalendarIcon, ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useMatches } from "@/hooks/useMatches";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/types/sdui";
+import { getCurrentPosition, LocationError } from "@/lib/location";
+import { useToast } from "@/hooks/use-toast";
 
 const RECENT_LOCATIONS = [
   "London, UK",
@@ -49,6 +51,8 @@ export function SearchScreen({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [sortByNearest, setSortByNearest] = useState(false);
   const trimmedQuery = query.trim();
+  const { toast } = useToast();
+  const hasShownErrorRef = useRef(false);
 
   /**
    * Server-driven search:
@@ -63,22 +67,40 @@ export function SearchScreen({
 
   /** Request device GPS and populate search with coordinates */
   const handleUseLocation = useCallback(() => {
-    if (!navigator.geolocation) return;
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
+    getCurrentPosition({ timeout: 5000 })
+      .then((pos) => {
         setLocating(false);
         setQuery(`${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`);
-      },
-      () => setLocating(false),
-      { timeout: 5000 }
-    );
-  }, []);
+      })
+      .catch((err) => {
+        setLocating(false);
+        const message =
+          err instanceof LocationError && err.code === "location_permission_denied"
+            ? "Location permission was denied. You can enable it in system settings."
+            : "Location access denied or unavailable.";
+        toast({ title: message, variant: "destructive" });
+      });
+  }, [toast]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     setCalendarOpen(false);
   };
+
+  // When the backend returns nothing (or cannot be reached), show a one-time
+  // toast instead of silently rendering an empty screen.
+  useEffect(() => {
+    if (trimmedQuery && !isLoading && results.length === 0 && !hasShownErrorRef.current) {
+      hasShownErrorRef.current = true;
+      toast({
+        title: "No matches found",
+        description:
+          "We couldn't find any matches for this city and date. Please adjust your search or try again.",
+        variant: "destructive",
+      });
+    }
+  }, [trimmedQuery, isLoading, results.length, toast]);
 
   return (
     <div className="animate-fade-in px-md pt-md">

@@ -2,7 +2,7 @@
  * ExploreScreen — the default "home" tab.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, X, MapPin, Navigation } from "lucide-react";
 import { MapView } from "@/components/MapView";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { getCurrentPosition, LocationError } from "@/lib/location";
 import type { Match } from "@/types/sdui";
 
 interface ExploreScreenProps {
@@ -37,14 +38,13 @@ export function ExploreScreen({
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
   const [cityDraft, setCityDraft] = useState("");
   const { toast } = useToast();
+  const hasShownErrorRef = useRef(false);
 
   const detectCity = useCallback(async () => {
     setDetectingCity(true);
     setCityPopoverOpen(false);
     try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
-      );
+      const pos = await getCurrentPosition({ timeout: 10000 });
       const { latitude, longitude } = pos.coords;
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
@@ -59,8 +59,12 @@ export function ExploreScreen({
       } else {
         toast({ title: "Could not determine your city", variant: "destructive" });
       }
-    } catch {
-      toast({ title: "Location access denied or unavailable", variant: "destructive" });
+    } catch (err) {
+      const message =
+        err instanceof LocationError && err.code === "location_permission_denied"
+          ? "Location permission was denied. You can enable it in system settings."
+          : "Location access denied or unavailable";
+      toast({ title: message, variant: "destructive" });
       setSort("date");
     } finally {
       setDetectingCity(false);
@@ -100,6 +104,19 @@ export function ExploreScreen({
   });
   const { data: filters = [] } = useFilters();
   const { data: sorts = [] } = useSorts();
+
+  // Surface backend connectivity problems early instead of failing silently.
+  useEffect(() => {
+    if (!isLoading && matches.length === 0 && !hasShownErrorRef.current) {
+      hasShownErrorRef.current = true;
+      toast({
+        title: "No matches available",
+        description:
+          "We couldn't load any matches for the current filters. Please check your connection or try again shortly.",
+        variant: "destructive",
+      });
+    }
+  }, [isLoading, matches.length, toast]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
