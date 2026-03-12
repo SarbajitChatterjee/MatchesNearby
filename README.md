@@ -21,9 +21,9 @@ MatchesNearby is a mobile application that instantly connects football fans with
     <td align="center"><b>Match Details</b></td>
   </tr>
   <tr>
-    <td><img src="https://placehold.co/300x600/1e1e1e/FFF?text=Explore+Screen" width="250" alt="Explore Screen"></td>
-    <td><img src="https://placehold.co/300x600/1e1e1e/FFF?text=Search/City+Filter" width="250" alt="Search Screen"></td>
-    <td><img src="https://placehold.co/300x600/1e1e1e/FFF?text=Match+Detail+Takeover" width="250" alt="TBD"></td>
+    <td><img src="./assets/homeScreen.png" width="250" alt="Explore Screen"></td>
+    <td><img src="./assets/searchScreen.png" width="250" alt="Search Screen"></td>
+    <td><img src="./assets/matchDetails.png" width="250" alt="Match Details"></td>
   </tr>
 </table>
 
