@@ -21,9 +21,12 @@ MatchesNearby is a mobile application that instantly connects football fans with
     <td align="center"><b>Match Details</b></td>
   </tr>
   <tr>
-    <td><img src="./assets/homeScreen.png" width="250" alt="Explore Screen"></td>
-    <td><img src="./assets/searchScreen.png" width="250" alt="Search Screen"></td>
-    <td><img src="./assets/matchDetails.png" width="250" alt="Match Details"></td>
+    <!-- <td><img src="./assets/homeScreen.png" width="250" alt="Explore Screen"></td> -->
+    <!-- <td><img src="./assets/searchScreen.png" width="250" alt="Search Screen"></td> -->
+    <!-- <td><img src="./assets/matchDetails.png" width="250" alt="Match Details"></td> -->
+    <td>*Coming Soon 🚧*</td>
+    <td>*Coming Soon 🚧*</td>
+    <td>*Coming Soon 🚧*</td>
   </tr>
 </table>
 
