@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { getCurrentPosition, LocationError } from "@/lib/location";
 import type { Match } from "@/types/sdui";
 
@@ -37,7 +37,6 @@ export function ExploreScreen({
   const [detectingCity, setDetectingCity] = useState(false);
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
   const [cityDraft, setCityDraft] = useState("");
-  const { toast } = useToast();
   const hasShownErrorRef = useRef(false);
 
   const detectCity = useCallback(async () => {
@@ -57,19 +56,19 @@ export function ExploreScreen({
         setSort("distance");
         setSelectedDate(new Date());
       } else {
-        toast({ title: "Could not determine your city", variant: "destructive" });
+        toast.error("Could not determine your city.");
       }
     } catch (err) {
       const message =
         err instanceof LocationError && err.code === "location_permission_denied"
           ? "Location permission was denied. You can enable it in system settings."
           : "Location access denied or unavailable";
-      toast({ title: message, variant: "destructive" });
+      toast.error(message);
       setSort("date");
     } finally {
       setDetectingCity(false);
     }
-  }, [toast]);
+  }, []);
 
   const handleCitySubmit = useCallback(() => {
     const trimmed = cityDraft.trim();
@@ -109,14 +108,11 @@ export function ExploreScreen({
   useEffect(() => {
     if (!isLoading && matches.length === 0 && !hasShownErrorRef.current) {
       hasShownErrorRef.current = true;
-      toast({
-        title: "No matches available",
-        description:
-          "We couldn't load any matches for the current filters. Please check your connection or try again shortly.",
-        variant: "destructive",
-      });
+      toast.error(
+        "No matches available. Please check your connection or try again shortly."
+      );
     }
-  }, [isLoading, matches.length, toast]);
+  }, [isLoading, matches.length]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
