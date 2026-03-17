@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # — Server Configuration —
     host: str = "0.0.0.0"                                          # 0.0.0.0 = accept external connections
     port: int = 8000                                                # Railway overrides this in production
-    cors_origins: str = "capacitor://localhost,http://localhost,http://localhost:8080,http://localhost:5173,http://localhost:3000"  # Allowed frontend URLs
+    cors_origins: str = "capacitor://localhost,http://localhost,https://localhost,http://localhost:8080,http://localhost:5173,http://localhost:3000"  # Allowed frontend URLs
 
     @property
     def league_id_list(self) -> list[int]:
