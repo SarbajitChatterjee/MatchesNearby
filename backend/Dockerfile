@@ -1,5 +1,7 @@
 # 1. Start with a lightweight, official Python base image
-FROM python:3.12-slim
+# FROM python:3.12-slim 
+# degrading to a lower version to deploy on Render (cloud service)
+FROM python:3.11-slim 
 
 # 2. Set the working directory inside the container
 WORKDIR /app
