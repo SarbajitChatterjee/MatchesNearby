@@ -18,7 +18,7 @@ import { useMatches } from "@/hooks/useMatches";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/types/sdui";
 import { getCurrentPosition, LocationError } from "@/lib/location";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 
 const RECENT_LOCATIONS = [
   "London, UK",
@@ -51,8 +51,8 @@ export function SearchScreen({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [sortByNearest, setSortByNearest] = useState(false);
   const trimmedQuery = query.trim();
-  const { toast } = useToast();
   const hasShownErrorRef = useRef(false);
+  const hasSearchCriteria = Boolean(trimmedQuery) || Boolean(selectedDate);
 
   /**
    * Server-driven search:
@@ -65,23 +65,44 @@ export function SearchScreen({
     city: trimmedQuery || undefined,
   });
 
-  /** Request device GPS and populate search with coordinates */
-  const handleUseLocation = useCallback(() => {
+  /** Request device GPS and populate search with a resolved city name. */
+  const handleUseLocation = useCallback(async () => {
     setLocating(true);
-    getCurrentPosition({ timeout: 5000 })
-      .then((pos) => {
-        setLocating(false);
-        setQuery(`${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`);
-      })
-      .catch((err) => {
-        setLocating(false);
-        const message =
-          err instanceof LocationError && err.code === "location_permission_denied"
-            ? "Location permission was denied. You can enable it in system settings."
-            : "Location access denied or unavailable.";
-        toast({ title: message, variant: "destructive" });
+    try {
+      const pos = await getCurrentPosition({
+        timeout: 10000,
+        enableHighAccuracy: true,
+        maximumAge: 30_000,
       });
-  }, [toast]);
+      const { latitude, longitude } = pos.coords;
+
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      const data = await res.json();
+      const city =
+        data.address?.city || data.address?.town || data.address?.village || "";
+
+      if (!city) {
+        toast.error("Could not determine your city from your location.");
+        return;
+      }
+
+      setQuery(city);
+      setSortByNearest(true);
+      // Nearest is only meaningful “today” unless user explicitly picks a date.
+      setSelectedDate((d) => d ?? new Date());
+    } catch (err) {
+      const message =
+        err instanceof LocationError && err.code === "location_permission_denied"
+          ? "Location permission was denied. You can enable it in system settings."
+          : "Location access denied or unavailable.";
+      toast.error(message);
+    } finally {
+      setLocating(false);
+    }
+  }, []);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -91,16 +112,11 @@ export function SearchScreen({
   // When the backend returns nothing (or cannot be reached), show a one-time
   // toast instead of silently rendering an empty screen.
   useEffect(() => {
-    if (trimmedQuery && !isLoading && results.length === 0 && !hasShownErrorRef.current) {
+    if (hasSearchCriteria && !isLoading && results.length === 0 && !hasShownErrorRef.current) {
       hasShownErrorRef.current = true;
-      toast({
-        title: "No matches found",
-        description:
-          "We couldn't find any matches for this city and date. Please adjust your search or try again.",
-        variant: "destructive",
-      });
+      toast.error("No matches found. Try a different date or location.");
     }
-  }, [trimmedQuery, isLoading, results.length, toast]);
+  }, [hasSearchCriteria, isLoading, results.length]);
 
   return (
     <div className="animate-fade-in px-md pt-md">
@@ -179,8 +195,8 @@ export function SearchScreen({
         </div>
       )}
 
-      {/* Empty query → show discovery helpers */}
-      {!trimmedQuery && (
+      {/* Empty query + no date → show discovery helpers */}
+      {!hasSearchCriteria && (
         <>
           {/* GPS location button */}
           <Button
@@ -234,15 +250,17 @@ export function SearchScreen({
       )}
 
       {/* Search results */}
-      {trimmedQuery && (
+      {hasSearchCriteria && (
         <div className="flex flex-col gap-sm pb-md">
           {isLoading ? (
             <p className="py-xl text-center text-sm text-muted-foreground">
-              Loading matches near "{trimmedQuery}"…
+              {trimmedQuery
+                ? `Loading matches near "${trimmedQuery}"…`
+                : "Loading matches…"}
             </p>
           ) : results.length === 0 ? (
             <p className="py-xl text-center text-sm text-muted-foreground">
-              No matches found for "{trimmedQuery}"
+              {trimmedQuery ? `No matches found for "${trimmedQuery}"` : "No matches found"}
               {selectedDate && ` on ${format(selectedDate, "MMMM d, yyyy")}`}.
             </p>
           ) : (

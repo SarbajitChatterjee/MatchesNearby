@@ -128,9 +128,9 @@ def get_matches_by_date(match_date: str, filter_type: str = "all", city: str | N
         return []
 
 
-def get_matches_upcoming(from_date: str, filter_type: str = "all", city: str | None = None) -> list[dict]:
+def get_matches_upcoming(from_kickoff_iso: str, filter_type: str = "all", city: str | None = None) -> list[dict]:
     """
-    Fetch all matches from today onward.
+    Fetch all matches from the given kickoff timestamp onward.
     Optionally filters by competition type and/or city.
     """
     try:
@@ -138,7 +138,7 @@ def get_matches_upcoming(from_date: str, filter_type: str = "all", city: str | N
             get_supabase()
             .table("matches")
             .select("*")
-            .gte("match_date", from_date)
+            .gte("kickoff", from_kickoff_iso)
         )
 
         if filter_type != "all":
@@ -151,7 +151,7 @@ def get_matches_upcoming(from_date: str, filter_type: str = "all", city: str | N
         result = query.order("kickoff").execute()
         return result.data
     except Exception as e:
-        logger.error(f"DB upcoming fetch failed from {from_date}: {e}")
+        logger.error(f"DB upcoming fetch failed from kickoff {from_kickoff_iso}: {e}")
         return []
 
 

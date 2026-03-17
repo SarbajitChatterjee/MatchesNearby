@@ -304,7 +304,8 @@ async def get_matches(
 
     else:
         # ── Mode 2: Upcoming matches ──
-        today = datetime.now(timezone.utc).date().isoformat()
+        now = datetime.now(timezone.utc)
+        today = now.date().isoformat()
 
         for league_id in settings.league_id_list:
             if not is_synced_fresh(league_id, today):
@@ -312,7 +313,7 @@ async def get_matches(
                 await _sync_league_upcoming(league_id, next_count)
 
         # Pass city to DB query
-        rows = get_matches_upcoming(today, filter_type, city)
+        rows = get_matches_upcoming(now.isoformat(), filter_type, city)
 
     # Convert database rows (snake_case) to Match objects (camelCase)
     matches = [db_row_to_match(row) for row in rows]
