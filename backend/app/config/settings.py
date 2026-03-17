@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # — Data Configuration —
     league_ids: str = "39,140,78,135,61,2,3"  # Comma-separated API-Football league IDs
-    season: int = 2025                         # Football season year
+    season: int = 2024                         # Football season year
     fixtures_next: int = 50                    # Upcoming fixtures to fetch per league
     sync_freshness_hours: int = 6              # Hours before cached data is considered stale
 
